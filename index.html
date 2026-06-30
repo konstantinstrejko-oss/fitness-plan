@@ -579,6 +579,12 @@ const COOK = [
   },
 ];
 
+const DEFROST = [
+  {t:'Вс вечер', n:'Говяжий фарш 250 г', d:'Переложи из морозилки в холодильник — на ужин во вторник', c:'var(--cyan)'},
+  {t:'Пн утром', n:'Свинина 300 г',       d:'Переложи из морозилки в холодильник — на ужин в среду', c:'var(--cyan)'},
+  {t:'Вт утром', n:'Говяжий фарш 250 г', d:'Переложи из морозилки в холодильник — на ужин в четверг', c:'var(--cyan)'},
+];
+
 const TL_TRAIN = [
   {t:'09:15', n:'Завтрак',           d:'Омлет + овсянка с бананом', c:'var(--green)'},
   {t:'09:50', n:'Предтреник',        d:'Банан + рисовые лепёшки', c:'var(--amber)'},
@@ -840,6 +846,21 @@ function renderWeek() {
 function renderCook() {
   const root = document.getElementById('sc-cook');
   let html = '';
+
+  // defrost schedule card
+  html += `<div class="cook-card">
+    <div class="cook-hdr" style="background:rgba(34,211,238,.08)">
+      <div class="cook-htitle" style="color:var(--cyan)">РАЗМОРОЗКА — РАСПИСАНИЕ</div>
+      <div class="cook-hsub">Перекладывай из морозилки в холодильник заранее</div>
+    </div>`;
+  for (const r of DEFROST) {
+    html += `<div class="cook-step">
+      <div class="cook-t" style="color:${r.c}">${r.t}</div>
+      <div><div class="cook-n">${r.n}</div><div class="cook-d">${r.d}</div></div>
+    </div>`;
+  }
+  html += `</div>`;
+
   for (const ck of COOK) {
     html += `<div class="cook-card">
       <div class="cook-hdr">
