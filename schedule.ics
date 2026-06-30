@@ -1,0 +1,161 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//Fitness Plan//konstantinstrejko-oss//RU
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+X-WR-CALNAME:Фитнес-план
+X-WR-TIMEZONE:Europe/Moscow
+
+BEGIN:VTIMEZONE
+TZID:Europe/Moscow
+BEGIN:STANDARD
+DTSTART:19701025T030000
+TZOFFSETFROM:+0300
+TZOFFSETTO:+0300
+TZNAME:MSK
+END:STANDARD
+END:VTIMEZONE
+
+BEGIN:VEVENT
+UID:push-mon@fitness-plan
+SUMMARY:💪 PUSH — Грудь / Трицепс
+DTSTART;TZID=Europe/Moscow:20260706T100000
+DTEND;TZID=Europe/Moscow:20260706T113000
+RRULE:FREQ=WEEKLY;BYDAY=MO
+DESCRIPTION:День A — Push\nГрудь · Трицепс · Кор\n\nhttps://konstantinstrejko-oss.github.io/fitness-plan/
+LOCATION:Зал
+COLOR:GREEN
+BEGIN:VALARM
+TRIGGER:-PT30M
+ACTION:DISPLAY
+DESCRIPTION:ПРЕДТРЕНИК через 30 мин — банан + рисовые лепёшки
+END:VALARM
+END:VEVENT
+
+BEGIN:VEVENT
+UID:pull-wed@fitness-plan
+SUMMARY:💪 PULL — Спина / Бицепс
+DTSTART;TZID=Europe/Moscow:20260701T100000
+DTEND;TZID=Europe/Moscow:20260701T113000
+RRULE:FREQ=WEEKLY;BYDAY=WE
+DESCRIPTION:День B — Pull\nСпина · Бицепс · Задние дельты · Кор\n\nhttps://konstantinstrejko-oss.github.io/fitness-plan/
+LOCATION:Зал
+COLOR:GREEN
+BEGIN:VALARM
+TRIGGER:-PT30M
+ACTION:DISPLAY
+DESCRIPTION:ПРЕДТРЕНИК через 30 мин — банан + рисовые лепёшки
+END:VALARM
+END:VEVENT
+
+BEGIN:VEVENT
+UID:legs-sat@fitness-plan
+SUMMARY:💪 LEGS — Плечи / Ноги
+DTSTART;TZID=Europe/Moscow:20260704T100000
+DTEND;TZID=Europe/Moscow:20260704T113000
+RRULE:FREQ=WEEKLY;BYDAY=SA
+DESCRIPTION:День C — Legs + Shoulders\nПлечи · Бёдра · Ягодицы · Икры · Кор\n\nhttps://konstantinstrejko-oss.github.io/fitness-plan/
+LOCATION:Зал
+COLOR:GREEN
+BEGIN:VALARM
+TRIGGER:-PT30M
+ACTION:DISPLAY
+DESCRIPTION:ПРЕДТРЕНИК через 30 мин — банан + рисовые лепёшки
+END:VALARM
+END:VEVENT
+
+BEGIN:VEVENT
+UID:math-mon@fitness-plan
+SUMMARY:📐 Математика
+DTSTART;TZID=Europe/Moscow:20260706T140000
+DTEND;TZID=Europe/Moscow:20260706T153000
+RRULE:FREQ=WEEKLY;BYDAY=MO
+BEGIN:VALARM
+TRIGGER:-PT15M
+ACTION:DISPLAY
+DESCRIPTION:Математика через 15 мин
+END:VALARM
+END:VEVENT
+
+BEGIN:VEVENT
+UID:english-tue@fitness-plan
+SUMMARY:🇬🇧 Английский
+DTSTART;TZID=Europe/Moscow:20260707T140000
+DTEND;TZID=Europe/Moscow:20260707T150000
+RRULE:FREQ=WEEKLY;BYDAY=TU
+BEGIN:VALARM
+TRIGGER:-PT15M
+ACTION:DISPLAY
+DESCRIPTION:Английский через 15 мин
+END:VALARM
+END:VEVENT
+
+BEGIN:VEVENT
+UID:english-fri@fitness-plan
+SUMMARY:🇬🇧 Английский
+DTSTART;TZID=Europe/Moscow:20260703T121000
+DTEND;TZID=Europe/Moscow:20260703T131000
+RRULE:FREQ=WEEKLY;BYDAY=FR
+BEGIN:VALARM
+TRIGGER:-PT15M
+ACTION:DISPLAY
+DESCRIPTION:Английский через 15 мин
+END:VALARM
+END:VEVENT
+
+BEGIN:VEVENT
+UID:cook1-sun@fitness-plan
+SUMMARY:🍳 ГОТОВКА 1 — Закупка + готовка на неделю
+DTSTART;TZID=Europe/Moscow:20260705T100000
+DTEND;TZID=Europe/Moscow:20260705T133000
+RRULE:FREQ=WEEKLY;BYDAY=SU
+DESCRIPTION:Закупка всего по списку → заморозить говядину + свинину → жарить курицу → варить гречку и рис → яйца вкрутую\n\nВечером после готовки: достать фарш 250г в холодильник (на вторник)
+BEGIN:VALARM
+TRIGGER:-PT30M
+ACTION:DISPLAY
+DESCRIPTION:Готовка 1 через 30 мин — список закупок на сайте
+END:VALARM
+END:VEVENT
+
+BEGIN:VEVENT
+UID:cook2-wed@fitness-plan
+SUMMARY:🍳 ГОТОВКА 2 — Курица на СР–ВС
+DTSTART;TZID=Europe/Moscow:20260701T201500
+DTEND;TZID=Europe/Moscow:20260701T210000
+RRULE:FREQ=WEEKLY;BYDAY=WE
+DESCRIPTION:Жарить курицу 500г · Доварить гречку/рис если закончилась · Разложить по контейнерам\n\nС утра достать фарш 250г в холодильник (на четверг)
+BEGIN:VALARM
+TRIGGER:-PT15M
+ACTION:DISPLAY
+DESCRIPTION:Готовка 2 через 15 мин
+END:VALARM
+END:VEVENT
+
+BEGIN:VEVENT
+UID:defrost-mon-eve@fitness-plan
+SUMMARY:❄️ Разморозка — фарш 250г (на вторник)
+DTSTART;TZID=Europe/Moscow:20260706T200000
+DTEND;TZID=Europe/Moscow:20260706T200500
+RRULE:FREQ=WEEKLY;BYDAY=MO
+DESCRIPTION:Переложи говяжий фарш 250г из морозилки в холодильник — нужен на ужин во вторник
+END:VEVENT
+
+BEGIN:VEVENT
+UID:defrost-tue-eve@fitness-plan
+SUMMARY:❄️ Разморозка — свинина 300г (на среду)
+DTSTART;TZID=Europe/Moscow:20260707T200000
+DTEND;TZID=Europe/Moscow:20260707T200500
+RRULE:FREQ=WEEKLY;BYDAY=TU
+DESCRIPTION:Переложи свинину 300г из морозилки в холодильник — нужна на ужин в среду
+END:VEVENT
+
+BEGIN:VEVENT
+UID:defrost-wed-morn@fitness-plan
+SUMMARY:❄️ Разморозка — фарш 250г (на четверг)
+DTSTART;TZID=Europe/Moscow:20260701T090000
+DTEND;TZID=Europe/Moscow:20260701T090500
+RRULE:FREQ=WEEKLY;BYDAY=WE
+DESCRIPTION:Переложи говяжий фарш 250г из морозилки в холодильник — нужен на ужин в четверг
+END:VEVENT
+
+END:VCALENDAR
