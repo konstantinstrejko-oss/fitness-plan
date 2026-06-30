@@ -1,0 +1,929 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>Фитнес-план</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+:root{
+  --bg:#09090E;--s1:#0F1119;--s2:#171825;--s3:#1E2038;--bd:#252A42;
+  --blue:#4F8EF7;--violet:#7C6FF7;--cyan:#22D3EE;--green:#22C55E;
+  --amber:#F59E0B;--red:#EF4444;--orange:#FB923C;--pink:#EC4899;
+  --text:#F1F5F9;--t2:#94A3B8;--dim:#475569;
+  --A:#7BF045;--B:#FF6B35;--C:#4F8EF7;
+  --font:-apple-system,BlinkMacSystemFont,'SF Pro Display','SF Pro Text',system-ui,sans-serif;
+}
+html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--font);overflow-x:hidden}
+body{padding-bottom:calc(66px + env(safe-area-inset-bottom))}
+
+/* ── HEADER ── */
+.hdr{
+  position:sticky;top:0;z-index:100;
+  background:rgba(15,17,25,0.92);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
+  border-bottom:1px solid var(--bd);padding:14px 18px 11px;
+}
+.hdr-title{font-size:20px;font-weight:800;letter-spacing:-.5px}
+.hdr-title span{
+  background:linear-gradient(135deg,var(--blue) 0%,var(--violet) 60%,var(--cyan) 100%);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+}
+.hdr-sub{font-size:12px;color:var(--t2);margin-top:2px;letter-spacing:.2px}
+
+/* ── BOTTOM NAV ── */
+.nav{
+  position:fixed;bottom:0;left:0;right:0;z-index:200;
+  background:rgba(15,17,25,0.96);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
+  border-top:1px solid var(--bd);display:flex;
+  padding-bottom:env(safe-area-inset-bottom);
+}
+.nb{
+  flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;
+  padding:10px 8px;border:none;background:none;cursor:pointer;
+  color:var(--dim);font-family:var(--font);font-size:10px;font-weight:600;
+  letter-spacing:.3px;transition:color .15s;
+}
+.nb.on{color:var(--blue)}
+.nb svg{width:22px;height:22px;stroke-width:2;fill:none;stroke:currentColor;stroke-linecap:round;stroke-linejoin:round}
+
+/* ── TABS ── */
+.tab{display:none;padding-top:4px}
+.tab.on{display:block}
+
+/* ── SECTION LABEL ── */
+.sec-lbl{
+  font-size:11px;font-weight:700;letter-spacing:.8px;color:var(--t2);
+  text-transform:uppercase;padding:16px 18px 8px;
+}
+
+/* ══ TRAINING ══ */
+.day-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:12px 16px 8px}
+.dc{
+  background:var(--s2);border:1.5px solid var(--bd);border-radius:16px;
+  padding:14px 8px;text-align:center;cursor:pointer;transition:all .2s;
+  min-height:82px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;
+}
+.dc .letter{font-size:28px;font-weight:900;line-height:1;transition:transform .2s}
+.dc.on .letter{transform:scale(1.1)}
+.dc .dname{font-size:10px;font-weight:700;color:var(--t2);letter-spacing:.6px}
+.dc[data-d="A"] .letter{color:var(--A)}
+.dc[data-d="B"] .letter{color:var(--B)}
+.dc[data-d="C"] .letter{color:var(--C)}
+.dc.on[data-d="A"]{border-color:var(--A);background:rgba(123,240,69,.07)}
+.dc.on[data-d="B"]{border-color:var(--B);background:rgba(255,107,53,.07)}
+.dc.on[data-d="C"]{border-color:var(--C);background:rgba(79,142,247,.09)}
+
+.day-wrap{display:none}
+.day-wrap.on{display:block}
+
+/* progress */
+.prog-row{display:flex;align-items:center;gap:10px;padding:10px 18px 6px}
+.prog-bar{flex:1;height:4px;background:var(--s3);border-radius:2px;overflow:hidden}
+.prog-fill{height:100%;border-radius:2px;transition:width .35s ease;width:0%}
+.fill-A{background:linear-gradient(90deg,var(--A),#22c55e)}
+.fill-B{background:linear-gradient(90deg,var(--B),#f59e0b)}
+.fill-C{background:linear-gradient(90deg,var(--C),var(--violet))}
+.prog-txt{font-size:11px;color:var(--dim);white-space:nowrap;font-weight:600}
+
+/* section header */
+.sh{
+  display:flex;align-items:center;gap:9px;
+  padding:11px 18px 7px;cursor:pointer;user-select:none;
+}
+.sh-bar{width:3px;border-radius:2px;flex-shrink:0;transition:height .2s}
+.sh-name{font-size:11px;font-weight:700;letter-spacing:.8px;flex:1;text-transform:uppercase}
+.sh-cnt{font-size:11px;color:var(--dim)}
+.sh-chev{color:var(--dim);transition:transform .2s;flex-shrink:0}
+.sh.closed .sh-chev{transform:rotate(-90deg)}
+.sec-body{padding:0 16px}
+
+/* exercise row */
+.ex{
+  display:flex;align-items:center;gap:11px;
+  padding:11px 13px;background:var(--s2);border-radius:13px;
+  margin-bottom:6px;min-height:62px;cursor:pointer;transition:opacity .25s;
+}
+.ex.done{opacity:.38}
+.ex-cb{
+  width:28px;height:28px;min-width:28px;border-radius:50%;
+  border:2px solid var(--bd);display:flex;align-items:center;justify-content:center;
+  transition:all .18s;flex-shrink:0;
+}
+.ex-cb.chk{background:var(--blue);border-color:var(--blue)}
+.ex-cb svg{display:none;width:14px;height:14px;stroke:white;stroke-width:3;fill:none;stroke-linecap:round;stroke-linejoin:round}
+.ex-cb.chk svg{display:block}
+.ex-info{flex:1;min-width:0}
+.ex-name{font-size:15px;font-weight:600;line-height:1.25}
+.ex.done .ex-name{text-decoration:line-through;color:var(--dim)}
+.ex-mus{font-size:12px;color:var(--t2);margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ex-badge{
+  background:var(--s3);border-radius:9px;padding:5px 9px;
+  font-size:12px;font-weight:700;white-space:nowrap;flex-shrink:0;
+  letter-spacing:-.2px;
+}
+
+/* reset */
+.reset-btn{
+  display:flex;align-items:center;justify-content:center;gap:7px;
+  margin:10px 16px 4px;padding:12px;width:calc(100% - 32px);
+  background:var(--s2);border:1px solid var(--bd);border-radius:13px;
+  color:var(--dim);font-family:var(--font);font-size:13px;font-weight:600;
+  cursor:pointer;transition:color .15s,border-color .15s;
+}
+.reset-btn:active{color:var(--text);border-color:var(--t2)}
+.reset-btn svg{width:15px;height:15px;stroke:currentColor;stroke-width:2;fill:none;stroke-linecap:round;stroke-linejoin:round}
+
+/* notes */
+.notes{margin:14px 16px 6px;background:var(--s2);border-radius:15px;overflow:hidden}
+.notes-hdr{
+  padding:11px 14px;background:rgba(245,158,11,.08);
+  border-bottom:1px solid var(--bd);
+  font-size:11px;font-weight:700;letter-spacing:.7px;color:var(--amber);text-transform:uppercase;
+}
+.note-r{display:flex;gap:10px;padding:10px 14px;border-bottom:1px solid var(--bd)}
+.note-r:last-child{border-bottom:none}
+.note-lbl{font-size:11px;font-weight:700;color:var(--amber);min-width:88px;padding-top:1px}
+.note-body{font-size:13px;color:var(--t2);line-height:1.45}
+
+/* ══ NUTRITION ══ */
+.macro-row{
+  display:grid;grid-template-columns:repeat(4,1fr);
+  margin:12px 16px;background:var(--s2);border-radius:15px;overflow:hidden;border:1px solid var(--bd);
+}
+.mc{padding:12px 6px;text-align:center;border-right:1px solid var(--bd)}
+.mc:last-child{border-right:none}
+.mc-lbl{font-size:10px;color:var(--t2);text-transform:uppercase;letter-spacing:.4px;font-weight:600}
+.mc-val{font-size:17px;font-weight:800;margin-top:3px;letter-spacing:-.5px}
+.mc-unit{font-size:10px;color:var(--dim)}
+
+.meal-tabs{display:flex;gap:8px;padding:0 16px 10px}
+.mt{
+  flex:1;padding:10px;background:var(--s2);border:1.5px solid var(--bd);border-radius:11px;
+  text-align:center;font-size:13px;font-weight:700;color:var(--t2);cursor:pointer;
+  transition:all .15s;font-family:var(--font);
+}
+.mt.on{border-color:var(--green);color:var(--green);background:rgba(34,197,94,.07)}
+
+.meal-wrap{display:none}
+.meal-wrap.on{display:block}
+
+.meal-card{margin:0 16px 10px;background:var(--s2);border-radius:15px;overflow:hidden;border:1px solid var(--bd)}
+.meal-hdr{display:flex;justify-content:space-between;align-items:flex-start;padding:11px 14px;background:var(--s3);border-bottom:1px solid var(--bd)}
+.meal-left{}
+.meal-time{font-size:11px;color:var(--t2);font-weight:600}
+.meal-title{font-size:15px;font-weight:700;margin-top:2px}
+.meal-right{text-align:right;flex-shrink:0}
+.meal-kcal{font-size:13px;font-weight:800;color:var(--amber)}
+.meal-prot{font-size:11px;color:var(--green);margin-top:2px}
+.meal-item{padding:9px 14px;border-bottom:1px solid var(--bd)}
+.meal-item:last-child{border-bottom:none}
+.meal-item-n{font-size:14px;font-weight:600}
+.meal-item-d{font-size:12px;color:var(--t2);margin-top:2px;line-height:1.4}
+
+/* shopping */
+.shop-cat{margin:0 16px 8px;background:var(--s2);border-radius:15px;overflow:hidden;border:1px solid var(--bd)}
+.shop-chdr{display:flex;align-items:center;gap:10px;padding:12px 14px;cursor:pointer}
+.shop-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.shop-cname{flex:1;font-size:13px;font-weight:700}
+.shop-chev{color:var(--dim);transition:transform .2s}
+.shop-chdr.open .shop-chev{transform:rotate(180deg)}
+.shop-body{display:none}
+.shop-body.open{display:block}
+.shop-item{display:flex;justify-content:space-between;align-items:flex-start;padding:9px 14px 9px 32px;border-top:1px solid var(--bd);gap:10px}
+.shop-iname{font-size:14px;font-weight:600;flex:1}
+.shop-inote{font-size:12px;color:var(--t2);margin-top:2px;line-height:1.3}
+.shop-qty{font-size:14px;font-weight:700;color:var(--green);white-space:nowrap;flex-shrink:0}
+
+/* rules */
+.rules-card{margin:0 16px 16px;background:var(--s2);border-radius:15px;overflow:hidden;border:1px solid var(--bd)}
+.rule-r{display:flex;gap:10px;padding:10px 14px;border-bottom:1px solid var(--bd);align-items:flex-start}
+.rule-r:last-child{border-bottom:none}
+.rule-lbl{font-size:11px;font-weight:700;color:var(--amber);min-width:80px;padding-top:1px;text-transform:uppercase;letter-spacing:.3px}
+.rule-body{font-size:13px;color:var(--t2);line-height:1.45;flex:1}
+
+/* ══ SCHEDULE ══ */
+.sched-tabs{display:flex;gap:6px;padding:12px 16px 8px;overflow-x:auto;scrollbar-width:none}
+.sched-tabs::-webkit-scrollbar{display:none}
+.st{
+  flex-shrink:0;padding:8px 15px;background:var(--s2);border:1.5px solid var(--bd);border-radius:20px;
+  font-size:12px;font-weight:700;color:var(--t2);cursor:pointer;font-family:var(--font);
+  transition:all .15s;letter-spacing:.2px;
+}
+.st.on{border-color:var(--amber);color:var(--amber);background:rgba(245,158,11,.08)}
+
+.sc{display:none}
+.sc.on{display:block}
+
+/* week table */
+.week-tbl{margin:0 16px 16px;border-radius:15px;overflow:hidden;border:1px solid var(--bd)}
+.wr{display:grid;grid-template-columns:44px 1fr auto;gap:10px;padding:11px 14px;border-bottom:1px solid var(--bd);align-items:start}
+.wr:last-child{border-bottom:none}
+.wr:nth-child(odd){background:var(--s2)}
+.wr:nth-child(even){background:var(--s3)}
+.wd{font-size:17px;font-weight:900;padding-top:1px}
+.ws{}
+.wb{
+  display:inline-flex;align-items:center;gap:5px;padding:4px 9px;border-radius:8px;
+  font-size:11px;font-weight:700;margin-bottom:3px;
+}
+.wsub{font-size:11px;color:var(--t2)}
+.wdinner{font-size:12px;color:var(--t2);text-align:right;max-width:100px;line-height:1.3}
+
+/* cook */
+.cook-card{margin:0 16px 12px;background:var(--s2);border-radius:15px;overflow:hidden;border:1px solid var(--bd)}
+.cook-hdr{padding:12px 14px;background:rgba(251,146,60,.1);border-bottom:1px solid var(--bd)}
+.cook-htitle{font-size:14px;font-weight:700;color:var(--orange)}
+.cook-hsub{font-size:12px;color:var(--t2);margin-top:2px}
+.cook-step{display:grid;grid-template-columns:48px 1fr;gap:8px;padding:10px 14px;border-bottom:1px solid var(--bd);align-items:start}
+.cook-step:last-child{border-bottom:none}
+.cook-t{font-size:11px;font-weight:700;color:var(--orange);padding-top:2px}
+.cook-n{font-size:14px;font-weight:600}
+.cook-d{font-size:12px;color:var(--t2);margin-top:2px;line-height:1.35}
+
+/* timeline */
+.tl-card{margin:0 16px 12px;background:var(--s2);border-radius:15px;overflow:hidden;border:1px solid var(--bd)}
+.tl-hdr{padding:11px 14px;border-bottom:1px solid var(--bd);background:var(--s3)}
+.tl-htitle{font-size:13px;font-weight:700}
+.tl-hsub{font-size:11px;color:var(--t2);margin-top:2px}
+.tl-row{display:grid;grid-template-columns:50px 1fr;gap:8px;padding:9px 14px;border-bottom:1px solid var(--bd);align-items:start}
+.tl-row:last-child{border-bottom:none}
+.tl-t{font-size:13px;font-weight:700;padding-top:2px}
+.tl-n{font-size:14px;font-weight:600}
+.tl-d{font-size:12px;color:var(--t2);margin-top:2px;line-height:1.3}
+
+/* shelf */
+.shelf-card{margin:0 16px 16px;background:var(--s2);border-radius:15px;overflow:hidden;border:1px solid var(--bd)}
+.shelf-r{display:flex;justify-content:space-between;align-items:flex-start;padding:10px 14px;border-bottom:1px solid var(--bd);gap:12px}
+.shelf-r:last-child{border-bottom:none}
+.shelf-n{font-size:14px;font-weight:600}
+.shelf-note{font-size:12px;color:var(--t2);margin-top:2px}
+.shelf-d{font-size:15px;font-weight:800;white-space:nowrap;flex-shrink:0}
+</style>
+</head>
+<body>
+
+<header class="hdr">
+  <div class="hdr-title"><span>ФИТНЕС-ПЛАН</span></div>
+  <div class="hdr-sub">16 лет · 190 см · 70 кг · Push / Pull / Legs · 2950 ккал</div>
+</header>
+
+<!-- ══ TAB: ТРЕНИРОВКИ ══ -->
+<section class="tab on" id="tab-train">
+
+  <div class="day-grid">
+    <div class="dc on" data-d="A" onclick="selDay('A')">
+      <div class="letter">A</div>
+      <div class="dname">PUSH</div>
+    </div>
+    <div class="dc" data-d="B" onclick="selDay('B')">
+      <div class="letter">B</div>
+      <div class="dname">PULL</div>
+    </div>
+    <div class="dc" data-d="C" onclick="selDay('C')">
+      <div class="letter">C</div>
+      <div class="dname">LEGS</div>
+    </div>
+  </div>
+
+  <!-- day content rendered by JS -->
+  <div id="days-root"></div>
+
+</section>
+
+<!-- ══ TAB: ПИТАНИЕ ══ -->
+<section class="tab" id="tab-food">
+
+  <div class="macro-row">
+    <div class="mc">
+      <div class="mc-lbl">Калории</div>
+      <div class="mc-val" style="color:var(--amber)">2950</div>
+      <div class="mc-unit">ккал</div>
+    </div>
+    <div class="mc">
+      <div class="mc-lbl">Белок</div>
+      <div class="mc-val" style="color:var(--blue)">210</div>
+      <div class="mc-unit">г</div>
+    </div>
+    <div class="mc">
+      <div class="mc-lbl">Углеводы</div>
+      <div class="mc-val" style="color:var(--violet)">355</div>
+      <div class="mc-unit">г</div>
+    </div>
+    <div class="mc">
+      <div class="mc-lbl">Жиры</div>
+      <div class="mc-val" style="color:var(--cyan)">85</div>
+      <div class="mc-unit">г</div>
+    </div>
+  </div>
+
+  <div class="meal-tabs">
+    <button class="mt on" onclick="selMeal('train',this)">День тренировки</button>
+    <button class="mt" onclick="selMeal('rest',this)">День отдыха</button>
+  </div>
+
+  <div class="meal-wrap on" id="meal-train"></div>
+  <div class="meal-wrap" id="meal-rest"></div>
+
+  <div class="sec-lbl">СПИСОК ЗАКУПОК — НЕДЕЛЯ</div>
+  <div id="shop-root"></div>
+
+  <div class="sec-lbl">ПРАВИЛА ПИТАНИЯ</div>
+  <div class="rules-card" id="rules-root"></div>
+
+</section>
+
+<!-- ══ TAB: РАСПИСАНИЕ ══ -->
+<section class="tab" id="tab-sched">
+
+  <div class="sched-tabs">
+    <button class="st on" onclick="selSched('week',this)">Неделя</button>
+    <button class="st" onclick="selSched('cook',this)">Готовка</button>
+    <button class="st" onclick="selSched('tl',this)">Распорядок</button>
+    <button class="st" onclick="selSched('shelf',this)">Хранение</button>
+  </div>
+
+  <div class="sc on" id="sc-week"></div>
+  <div class="sc" id="sc-cook"></div>
+  <div class="sc" id="sc-tl"></div>
+  <div class="sc" id="sc-shelf"></div>
+
+</section>
+
+<!-- ══ BOTTOM NAV ══ -->
+<nav class="nav">
+  <button class="nb on" data-tab="train" onclick="selTab('train')">
+    <svg viewBox="0 0 24 24"><path d="M6 4v16M18 4v16M6 12h12M3 8h3M18 8h3M3 16h3M18 16h3"/></svg>
+    Тренировки
+  </button>
+  <button class="nb" data-tab="food" onclick="selTab('food')">
+    <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"/><path d="M12 6v6l4 2"/></svg>
+    Питание
+  </button>
+  <button class="nb" data-tab="sched" onclick="selTab('sched')">
+    <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+    Расписание
+  </button>
+</nav>
+
+<script>
+// ─── DATA ────────────────────────────────────────────────────────────────────
+
+const DAYS = {
+  A: {
+    name:'PUSH', sub:'Грудь · Трицепс', color:'var(--A)',
+    sections:[
+      { name:'ГРУДЬ', color:'#4F8EF7', exs:[
+        {id:'a1', name:'Жим штанги лёжа',           sets:'4 × 6–8',  m:'Грудь, трицепс, передние дельты'},
+        {id:'a2', name:'Жим гантелей на наклонной', sets:'3 × 8–10', m:'Верхняя грудь, передние дельты'},
+        {id:'a3', name:'Пекдек / Бабочка',          sets:'3 × 12',   m:'Грудь — изоляция'},
+      ]},
+      { name:'ТРИЦЕПС', color:'#7C6FF7', exs:[
+        {id:'a4', name:'Разгибание косички из-за головы', sets:'3 × 12',   m:'Длинная головка трицепса'},
+        {id:'a5', name:'Разгибание на тросе вниз rope',   sets:'3 × 12',   m:'Латеральная и медиальная головки'},
+        {id:'a6', name:'Брусья / Skull Crushers',         sets:'3 × 8–10', m:'Чередуй через неделю — все головки'},
+      ]},
+      { name:'КОР [через тренировку]', color:'#22D3EE', exs:[
+        {id:'a7', name:'Планка',                    sets:'3 × 60с', m:'Поперечная мышца, стабилизаторы'},
+        {id:'a8', name:'Подъём ног в висе',         sets:'3 × 12',  m:'Нижний пресс, сгибатели бедра'},
+        {id:'a9', name:'Скручивания на блоке',      sets:'3 × 15',  m:'Прямая мышца живота — изоляция'},
+      ]},
+    ]
+  },
+  B: {
+    name:'PULL', sub:'Спина · Бицепс · Задние дельты', color:'var(--B)',
+    sections:[
+      { name:'СПИНА', color:'#FF6B35', exs:[
+        {id:'b1', name:'Подтягивания / тяга верхнего блока', sets:'4 × 8–10', m:'Широчайшие, бицепс'},
+        {id:'b2', name:'Тяга Т-грифа',                       sets:'4 × 8–10', m:'Широчайшие, средняя спина, бицепс'},
+        {id:'b3', name:'Тяга верхнего блока узким хватом',   sets:'3 × 10',   m:'Нижняя часть широчайших, бицепс'},
+      ]},
+      { name:'ЗАДНИЕ ДЕЛЬТЫ', color:'#EC4899', exs:[
+        {id:'b4', name:'Face pull — тяга троса к лицу', sets:'3 × 15', m:'Задние дельты, ротаторная манжета'},
+      ]},
+      { name:'БИЦЕПС', color:'#EF4444', exs:[
+        {id:'b5', name:'Скамья Скотта',                  sets:'3 × 10', m:'Изоляция — не разгибать до конца'},
+        {id:'b6', name:'Молотки с гантелями',            sets:'3 × 12', m:'Длинная головка, брахиалис, предплечья'},
+        {id:'b7', name:'Подъём штанги на бицепс стоя',  sets:'3 × 10', m:'Обе головки бицепса'},
+      ]},
+      { name:'КОР [через тренировку]', color:'#22D3EE', exs:[
+        {id:'b8', name:'Планка',               sets:'3 × 60с', m:'Поперечная мышца, стабилизаторы'},
+        {id:'b9', name:'Подъём ног в висе',    sets:'3 × 12',  m:'Нижний пресс, сгибатели бедра'},
+        {id:'b10',name:'Скручивания на блоке', sets:'3 × 15',  m:'Прямая мышца живота — изоляция'},
+      ]},
+    ]
+  },
+  C: {
+    name:'LEGS + SHOULDERS', sub:'Плечи · Бёдра · Ягодицы · Икры', color:'var(--C)',
+    sections:[
+      { name:'ПЛЕЧИ', color:'#7C6FF7', exs:[
+        {id:'c1', name:'Жим гантелей сидя',        sets:'3 × 10', m:'Средние и передние дельты, трицепс'},
+        {id:'c2', name:'Боковые подъёмы гантелей', sets:'3 × 12', m:'Средние дельты — изоляция'},
+      ]},
+      { name:'КВАДРИЦЕПС [knee-safe]', color:'#4F8EF7', exs:[
+        {id:'c3', name:'Обратные выпады с гантелями',    sets:'3 × 10', m:'Квадрицепс, ягодицы — шаг назад'},
+        {id:'c4', name:'Жим ногами — неполная амплитуда',sets:'3 × 10', m:'Квадрицепс, ягодицы — колено не в замок'},
+      ]},
+      { name:'БИЦЕПС БЕДРА', color:'#F59E0B', exs:[
+        {id:'c5', name:'Сгибание с валиком лёжа', sets:'3 × 12', m:'Бицепс бедра — изоляция'},
+        {id:'c6', name:'Сгибание с валиком сидя', sets:'3 × 12', m:'Бицепс бедра — другой угол растяжки'},
+      ]},
+      { name:'ОТВОДЯЩИЕ / ПРИВОДЯЩИЕ', color:'#22D3EE', exs:[
+        {id:'c7', name:'Разводки сидя (hip abduction)', sets:'3 × 15', m:'Ягодицы, отводящие мышцы бедра'},
+        {id:'c8', name:'Сводки сидя (hip adduction)',   sets:'3 × 15', m:'Приводящие мышцы бедра'},
+      ]},
+      { name:'ИКРЫ', color:'#22C55E', exs:[
+        {id:'c9', name:'Икры стоя в тренажёре', sets:'4 × 15', m:'Икроножная мышца'},
+      ]},
+      { name:'КОР [через тренировку]', color:'#22D3EE', exs:[
+        {id:'c10',name:'Планка',               sets:'3 × 60с', m:'Поперечная мышца, стабилизаторы'},
+        {id:'c11',name:'Подъём ног в висе',    sets:'3 × 12',  m:'Нижний пресс, сгибатели бедра'},
+        {id:'c12',name:'Скручивания на блоке', sets:'3 × 15',  m:'Прямая мышца живота — изоляция'},
+      ]},
+    ]
+  }
+};
+
+const NOTES = [
+  ['КОЛЕНИ',     'Не разгибать в замок. Темп 2 сек вниз, 1 сек вверх. Колено по линии мизинца.'],
+  ['СКОТТ',      'Стоп за 10–15° до полного разгибания — защита локтевого сухожилия.'],
+  ['ПРОГРЕССИЯ', 'Добавляй вес только когда все повторы выполнены технически чисто.'],
+  ['РАСПИСАНИЕ', 'A → B → C · Понедельник / Среда / Суббота · 10:00–11:30'],
+];
+
+const MEALS_TRAIN = [
+  { time:'09:15', title:'Завтрак',        kcal:650, prot:40, items:[
+    {n:'Омлет из 3 яиц',                d:'3 яйца + 50 мл молока — на сковороде'},
+    {n:'Овсянка с бананом',             d:'80 г овсянки + 1 банан + 1 ч.л. мёда'},
+    {n:'Кофе без сахара',               d:''},
+  ]},
+  { time:'09:50', title:'Предтреник',    kcal:200, prot:5,  items:[
+    {n:'Банан',                         d:'1 штука — быстрые углеводы перед тренировкой'},
+    {n:'Рисовые лепёшки',              d:'2–3 штуки'},
+  ]},
+  { time:'12:00', title:'Обед (посттреник)', kcal:750, prot:60, items:[
+    {n:'Куриная грудка',                d:'200 г отварная или запечённая'},
+    {n:'Рис',                           d:'150 г в готовом виде'},
+    {n:'Авокадо',                       d:'½ шт — здоровые жиры + калий'},
+    {n:'Овощи',                         d:'Помидор + огурец'},
+  ]},
+  { time:'13:30', title:'Перекус',       kcal:280, prot:25, items:[
+    {n:'Творог 5%',                     d:'150 г + 1 ч.л. мёда'},
+    {n:'или Греческий йогурт',          d:'200 г без сахара'},
+  ]},
+  { time:'20:00', title:'Ужин',          kcal:800, prot:55, items:[
+    {n:'Белок по расписанию',           d:'Курица / говядина / свинина / тунец — 200 г'},
+    {n:'Гречка или рис',               d:'150 г в готовом виде'},
+    {n:'Шпинат или салат',             d:'50 г — калий + вывод воды'},
+  ]},
+];
+
+const MEALS_REST = [
+  { time:'09:15', title:'Завтрак',       kcal:620, prot:38, items:[
+    {n:'Омлет из 3 яиц',               d:'3 яйца + 50 мл молока — на сковороде'},
+    {n:'Овсянка',                       d:'80 г + горсть орехов / ягоды'},
+    {n:'Кофе без сахара',              d:''},
+  ]},
+  { time:'11:30', title:'Второй завтрак',kcal:280, prot:20, items:[
+    {n:'Творог 5%',                    d:'150 г + 1 ч.л. мёда'},
+    {n:'Банан',                        d:'1 штука'},
+  ]},
+  { time:'13:00', title:'Обед',         kcal:720, prot:55, items:[
+    {n:'Куриная грудка',               d:'200 г'},
+    {n:'Гречка',                       d:'150 г в готовом виде'},
+    {n:'Огурец + помидор',             d:''},
+  ]},
+  { time:'20:00', title:'Ужин',         kcal:800, prot:55, items:[
+    {n:'Белок по расписанию',          d:'Курица / говядина / свинина / тунец — 200 г'},
+    {n:'Гречка или рис',              d:'150 г в готовом виде'},
+    {n:'Шпинат или салат',            d:'50 г — калий + вывод воды'},
+  ]},
+  { time:'20:30', title:'Вечерний перекус', kcal:250, prot:30, items:[
+    {n:'Греческий йогурт',             d:'200 г без сахара'},
+    {n:'или Творог 5%',               d:'150 г — казеиновый белок на ночь'},
+  ]},
+];
+
+const SHOP = [
+  { name:'БЕЛОК', color:'#4F8EF7', items:[
+    {n:'Куриная грудка',   qty:'1.5 кг', note:'Готовь в воскресенье и среду'},
+    {n:'Говяжий фарш',     qty:'500 г',  note:'Заморозь сразу — размораживать по порциям'},
+    {n:'Свинина',          qty:'300 г',  note:'Порционно, заморозить'},
+    {n:'Тунец в собственном соку', qty:'2 банки', note:'Без масла — читай состав'},
+    {n:'Яйца',             qty:'15 шт',  note:'Куриные, категория С1 или С0'},
+    {n:'Творог 5%',        qty:'500 г',  note:'Зернистый или пастообразный'},
+    {n:'Греческий йогурт', qty:'2 пачки',note:'Без сахара и добавок'},
+  ]},
+  { name:'УГЛЕВОДЫ', color:'#7C6FF7', items:[
+    {n:'Рис длиннозёрный', qty:'1 кг',   note:'Пропаренный, готовится 15 мин'},
+    {n:'Гречка',           qty:'1 кг',   note:'Ядрица — варить 15 мин'},
+    {n:'Овсянка',          qty:'500 г',  note:'Хлопья «Геркулес», не быстрого приготовления'},
+    {n:'Рисовые лепёшки',  qty:'1 уп',   note:'На предтреник — 2–3 штуки'},
+    {n:'Хлеб цельнозерновой', qty:'1 буханка', note:''},
+  ]},
+  { name:'ЖИРЫ + СЛАДКОЕ', color:'#F59E0B', items:[
+    {n:'Авокадо',          qty:'3 шт',   note:'Для посттреника — источник калия и жиров'},
+    {n:'Орехи грецкие',    qty:'200 г',  note:'На перекус — 30 г в день'},
+    {n:'Мёд',              qty:'1 банка',note:'Небольшая — к творогу и овсянке'},
+    {n:'Тёмный шоколад',   qty:'1 плитка',note:'70%+ какао — 2–3 дольки вечером'},
+  ]},
+  { name:'СВЕЖЕЕ — КАЛИЙ + ВЫВОД ВОДЫ', color:'#22C55E', items:[
+    {n:'Бананы',           qty:'7 шт',   note:'По 1 в день — ~400 мг калия каждый'},
+    {n:'Картофель',        qty:'1 кг',   note:'Варить/запекать — лучший источник калия (900 мг/100г)'},
+    {n:'Шпинат',           qty:'200 г',  note:'В ужин или салат — 550 мг калия/100г + вода'},
+    {n:'Помидоры',         qty:'4 шт',   note:'К обеду и ужину'},
+    {n:'Огурцы',           qty:'4 шт',   note:'Диуретик — помогают вывести воду'},
+    {n:'Авокадо',          qty:'В БЕЛОК',note:'Уже в списке выше'},
+  ]},
+];
+
+const RULES = [
+  ['ВОДА',        '2.5–3 л в день. Утром сразу 500 мл. Между приёмами — не во время еды.'],
+  ['КАЛИЙ',       'Банан + шпинат + авокадо каждый день. Соотношение К:Na не ниже 2:1.'],
+  ['НАТРИЙ',      'Не более 2000 мг/день. Убрать фастфуд, чипсы, колбасы, соусы.'],
+  ['СОН',         'Ложиться до 00:00. GH пикует в первые 2 ч после засыпания. Не пропускать.'],
+  ['ПРОГРЕССИЯ',  'Вес растёт → прогрессируй нагрузку. Вес стоит → проверь белок и сон.'],
+  ['ТЕМП',        '2 сек опускаешь — 1 сек поднимаешь. Колено не разгибать в замок.'],
+];
+
+const WEEK = [
+  { day:'ПН', badge:'PUSH', bcolor:'var(--A)', sub:'10:00–11:30 · Математика 14:00', dinner:'Курица + гречка'},
+  { day:'ВТ', badge:'Отдых', bcolor:'var(--dim)', sub:'Английский 14:00–15:00', dinner:'Говяжий фарш + гречка'},
+  { day:'СР', badge:'PULL', bcolor:'var(--B)', sub:'10:00–11:30 · Готовка 20:15', dinner:'Свинина + рис'},
+  { day:'ЧТ', badge:'Отдых', bcolor:'var(--dim)', sub:'Свободный день', dinner:'Говяжий фарш + гречка'},
+  { day:'ПТ', badge:'Отдых', bcolor:'var(--dim)', sub:'Английский 12:10–13:10', dinner:'Курица + гречка'},
+  { day:'СБ', badge:'LEGS', bcolor:'var(--C)', sub:'10:00–11:30', dinner:'Тунец + гречка'},
+  { day:'ВС', badge:'Закупка', bcolor:'var(--orange)', sub:'Готовка 1 с 10:00', dinner:'Курица + рис'},
+];
+
+const COOK = [
+  { title:'ГОТОВКА 1 — ВОСКРЕСЕНЬЕ', time:'10:00 · Закупка + готовка на всю неделю',
+    steps:[
+      {t:'10:00', n:'Закупка в магазине', d:'Всё по списку — рассчитано на 7 дней'},
+      {t:'11:15', n:'Заморозить мясо', d:'Говяжий фарш и свинину (четверг – суббота) — порционно в пакеты'},
+      {t:'11:30', n:'Курица на неделю', d:'1 кг грудки — варить 25 мин в подсоленной воде'},
+      {t:'12:00', n:'Гречка и рис', d:'По 500 г каждой — в разных кастрюлях'},
+      {t:'12:30', n:'Яйца вкрутую', d:'8 штук — варить 10 мин, охладить, убрать в холодильник'},
+      {t:'13:00', n:'Нарезать и разложить', d:'Курица → контейнеры на ПН/ВТ/ПТ. Крупы → в общую ёмкость.'},
+      {t:'13:30', n:'Готово', d:'Холодильник укомплектован на понедельник–среду'},
+    ]
+  },
+  { title:'ГОТОВКА 2 — СРЕДА', time:'20:15 · Только готовка, без закупки',
+    steps:[
+      {t:'20:15', n:'Курица СР–ВС', d:'500 г грудки — варить 25 мин. Мясо для ЧТ–СБ размораживается само.'},
+      {t:'20:30', n:'Гречка / рис', d:'Доварить если закончилась — 15–20 мин'},
+      {t:'20:50', n:'Разложить', d:'Контейнеры на СР–ПТ. Говядина и свинина оттаяли — готовы к жарке.'},
+      {t:'21:00', n:'Ужин', d:'Свинина + рис из сегодняшней готовки'},
+    ]
+  },
+];
+
+const TL_TRAIN = [
+  {t:'09:15', n:'Завтрак',           d:'Омлет + овсянка с бананом', c:'var(--green)'},
+  {t:'09:50', n:'Предтреник',        d:'Банан + рисовые лепёшки', c:'var(--amber)'},
+  {t:'10:00', n:'ТРЕНИРОВКА',        d:'60–90 мин — A/B/C по расписанию', c:'var(--blue)'},
+  {t:'11:30', n:'Душ + отдых',       d:'', c:'var(--dim)'},
+  {t:'12:00', n:'Обед (посттреник)', d:'Курица + рис + авокадо', c:'var(--green)'},
+  {t:'13:30', n:'Перекус',           d:'Творог с мёдом', c:'var(--t2)'},
+  {t:'14:00', n:'[ПН] Математика',   d:'14:00–15:30', c:'var(--violet)'},
+  {t:'20:00', n:'Ужин',              d:'Белок по расписанию + гречка', c:'var(--green)'},
+];
+
+const TL_REST = [
+  {t:'09:15', n:'Завтрак',           d:'Омлет + овсянка', c:'var(--green)'},
+  {t:'11:30', n:'Второй завтрак',    d:'Творог + банан', c:'var(--t2)'},
+  {t:'12:10', n:'[ПТ] Английский',   d:'12:10–13:10', c:'var(--violet)'},
+  {t:'13:00', n:'Обед',              d:'Курица / говядина + гречка', c:'var(--green)'},
+  {t:'14:00', n:'[ВТ] Английский',   d:'14:00–15:00', c:'var(--violet)'},
+  {t:'20:00', n:'Ужин',              d:'Белок по расписанию + гречка', c:'var(--green)'},
+  {t:'20:30', n:'Вечерний перекус',  d:'Греческий йогурт / творог', c:'var(--t2)'},
+];
+
+const TL_SUN = [
+  {t:'09:15', n:'Завтрак',              d:'Омлет + овсянка', c:'var(--green)'},
+  {t:'10:00', n:'Закупка',             d:'Всё по списку — супермаркет', c:'var(--orange)'},
+  {t:'11:15', n:'Заморозить мясо',     d:'Говядина и свинина — сразу в морозилку', c:'var(--orange)'},
+  {t:'11:30', n:'Готовка 1 старт',     d:'Курица + гречка + рис + яйца', c:'var(--orange)'},
+  {t:'13:30', n:'Готово',              d:'Контейнеры готовы на ПН–ВТ–СР', c:'var(--green)'},
+  {t:'20:00', n:'Ужин',                d:'Курица + рис', c:'var(--green)'},
+];
+
+const SHELF = [
+  {n:'Варёная курица',    days:'3–4 дня', note:'Холодильник — контейнер с крышкой', c:'var(--amber)'},
+  {n:'Гречка / рис',     days:'5 дней',  note:'Холодильник', c:'var(--green)'},
+  {n:'Говяжий фарш',     days:'3–4 мес', note:'В морозилке порционно', c:'var(--cyan)'},
+  {n:'Свинина',          days:'3–4 мес', note:'В морозилке порционно', c:'var(--cyan)'},
+  {n:'Варёные яйца',     days:'7 дней',  note:'Холодильник, в скорлупе', c:'var(--amber)'},
+  {n:'Творог',           days:'По сроку',note:'Смотри на упаковку — обычно 5–7 дней', c:'var(--t2)'},
+  {n:'Авокадо',          days:'2–3 дня', note:'После вскрытия — хранить с косточкой, накрыть', c:'var(--red)'},
+  {n:'Шпинат',           days:'3–5 дней',note:'В пакете в холодильнике', c:'var(--amber)'},
+];
+
+// ─── RENDER: TRAINING ────────────────────────────────────────────────────────
+
+function renderDays() {
+  const root = document.getElementById('days-root');
+  let html = '';
+  for (const [letter, day] of Object.entries(DAYS)) {
+    const allIds = day.sections.flatMap(s => s.exs.map(e => e.id));
+    const total = allIds.length;
+    html += `
+    <div class="day-wrap${letter==='A'?' on':''}" id="dw-${letter}">
+      <div class="prog-row">
+        <div class="prog-bar"><div class="prog-fill fill-${letter}" id="pf-${letter}" style="width:0%"></div></div>
+        <div class="prog-txt" id="pt-${letter}">0 из ${total}</div>
+      </div>`;
+
+    for (const sec of day.sections) {
+      html += `
+      <div class="sh" id="sh-${sec.name.replace(/\s|\[|\]/g,'_')}_${letter}" onclick="toggleSec(this)">
+        <div class="sh-bar" style="height:18px;background:${sec.color}"></div>
+        <div class="sh-name" style="color:${sec.color}">${sec.name}</div>
+        <div class="sh-cnt">${sec.exs.length}</div>
+        <svg class="sh-chev" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+      </div>
+      <div class="sec-body" id="sb-${sec.name.replace(/\s|\[|\]/g,'_')}_${letter}">`;
+
+      for (const ex of sec.exs) {
+        html += `
+        <div class="ex" id="er-${ex.id}" onclick="toggleEx('${ex.id}','${letter}')">
+          <div class="ex-cb" id="cb-${ex.id}">
+            <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+          </div>
+          <div class="ex-info">
+            <div class="ex-name">${ex.name}</div>
+            <div class="ex-mus">${ex.m}</div>
+          </div>
+          <div class="ex-badge">${ex.sets}</div>
+        </div>`;
+      }
+      html += `</div>`;
+    }
+
+    html += `
+      <button class="reset-btn" onclick="resetDay('${letter}',event)">
+        <svg viewBox="0 0 24 24"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.72"/></svg>
+        Сбросить тренировку
+      </button>
+      <div class="notes">
+        <div class="notes-hdr">ВАЖНЫЕ ЗАМЕТКИ</div>`;
+    for (const [lbl, body] of NOTES) {
+      html += `<div class="note-r"><div class="note-lbl">${lbl}</div><div class="note-body">${body}</div></div>`;
+    }
+    html += `</div></div>`;
+  }
+  root.innerHTML = html;
+  initCheckboxes();
+}
+
+function toggleSec(hdr) {
+  hdr.classList.toggle('closed');
+  const id = hdr.id.replace('sh-','sb-');
+  const body = document.getElementById(id);
+  if (body) body.style.display = hdr.classList.contains('closed') ? 'none' : '';
+}
+
+function toggleEx(id, letter) {
+  const key = 'ex:' + id;
+  localStorage.setItem(key, localStorage.getItem(key) === '1' ? '0' : '1');
+  applyEx(id);
+  updateProgress(letter);
+}
+
+function applyEx(id) {
+  const done = localStorage.getItem('ex:' + id) === '1';
+  const row = document.getElementById('er-' + id);
+  const cb  = document.getElementById('cb-' + id);
+  if (!row || !cb) return;
+  row.classList.toggle('done', done);
+  cb.classList.toggle('chk', done);
+}
+
+function initCheckboxes() {
+  for (const [letter, day] of Object.entries(DAYS)) {
+    for (const sec of day.sections) {
+      for (const ex of sec.exs) applyEx(ex.id);
+    }
+    updateProgress(letter);
+  }
+}
+
+function updateProgress(letter) {
+  const day = DAYS[letter];
+  const allIds = day.sections.flatMap(s => s.exs.map(e => e.id));
+  const done = allIds.filter(id => localStorage.getItem('ex:' + id) === '1').length;
+  const pct  = allIds.length ? (done / allIds.length * 100) : 0;
+  const pf = document.getElementById('pf-' + letter);
+  const pt = document.getElementById('pt-' + letter);
+  if (pf) pf.style.width = pct + '%';
+  if (pt) pt.textContent = done + ' из ' + allIds.length;
+}
+
+function resetDay(letter, e) {
+  e.stopPropagation();
+  const day = DAYS[letter];
+  for (const sec of day.sections) {
+    for (const ex of sec.exs) localStorage.setItem('ex:' + ex.id, '0');
+  }
+  initCheckboxes();
+}
+
+function selDay(letter) {
+  document.querySelectorAll('.dc').forEach(d => d.classList.remove('on'));
+  document.querySelectorAll('.day-wrap').forEach(d => d.classList.remove('on'));
+  document.querySelector(`.dc[data-d="${letter}"]`).classList.add('on');
+  document.getElementById('dw-' + letter).classList.add('on');
+}
+
+// ─── RENDER: NUTRITION ───────────────────────────────────────────────────────
+
+function renderMeals() {
+  renderMealList('meal-train', MEALS_TRAIN);
+  renderMealList('meal-rest',  MEALS_REST);
+}
+
+function renderMealList(rootId, meals) {
+  const root = document.getElementById(rootId);
+  let html = '';
+  for (const m of meals) {
+    html += `
+    <div class="meal-card">
+      <div class="meal-hdr">
+        <div class="meal-left">
+          <div class="meal-time">${m.time}</div>
+          <div class="meal-title">${m.title}</div>
+        </div>
+        <div class="meal-right">
+          <div class="meal-kcal">${m.kcal} ккал</div>
+          <div class="meal-prot">Белок ~${m.prot} г</div>
+        </div>
+      </div>`;
+    for (const it of m.items) {
+      html += `<div class="meal-item">
+        <div class="meal-item-n">${it.n}</div>
+        ${it.d ? `<div class="meal-item-d">${it.d}</div>` : ''}
+      </div>`;
+    }
+    html += `</div>`;
+  }
+  root.innerHTML = html;
+}
+
+function renderShop() {
+  const root = document.getElementById('shop-root');
+  let html = '';
+  for (let i = 0; i < SHOP.length; i++) {
+    const cat = SHOP[i];
+    const uid = 'sc' + i;
+    html += `
+    <div class="shop-cat">
+      <div class="shop-chdr" onclick="toggleShopCat('${uid}',this)">
+        <div class="shop-dot" style="background:${cat.color}"></div>
+        <div class="shop-cname" style="color:${cat.color}">${cat.name}</div>
+        <svg class="shop-chev" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+      </div>
+      <div class="shop-body" id="${uid}">`;
+    for (const it of cat.items) {
+      html += `<div class="shop-item">
+        <div class="shop-iname">${it.n}${it.note ? `<div class="shop-inote">${it.note}</div>` : ''}</div>
+        <div class="shop-qty">${it.qty}</div>
+      </div>`;
+    }
+    html += `</div></div>`;
+  }
+  root.innerHTML = html;
+}
+
+function toggleShopCat(uid, hdr) {
+  const body = document.getElementById(uid);
+  const open = body.classList.toggle('open');
+  hdr.classList.toggle('open', open);
+}
+
+function renderRules() {
+  const root = document.getElementById('rules-root');
+  let html = '';
+  for (const [lbl, body] of RULES) {
+    html += `<div class="rule-r"><div class="rule-lbl">${lbl}</div><div class="rule-body">${body}</div></div>`;
+  }
+  root.innerHTML = html;
+}
+
+function selMeal(type, btn) {
+  document.querySelectorAll('.mt').forEach(b => b.classList.remove('on'));
+  document.querySelectorAll('.meal-wrap').forEach(w => w.classList.remove('on'));
+  btn.classList.add('on');
+  document.getElementById('meal-' + type).classList.add('on');
+}
+
+// ─── RENDER: SCHEDULE ────────────────────────────────────────────────────────
+
+function renderWeek() {
+  const root = document.getElementById('sc-week');
+  let html = '<div class="week-tbl">';
+  for (const row of WEEK) {
+    html += `
+    <div class="wr">
+      <div class="wd" style="color:${row.bcolor}">${row.day}</div>
+      <div class="ws">
+        <div class="wb" style="background:${row.bcolor}22;color:${row.bcolor}">${row.badge}</div>
+        <div class="wsub">${row.sub}</div>
+      </div>
+      <div class="wdinner">${row.dinner}</div>
+    </div>`;
+  }
+  html += '</div>';
+  root.innerHTML = html;
+}
+
+function renderCook() {
+  const root = document.getElementById('sc-cook');
+  let html = '';
+  for (const ck of COOK) {
+    html += `<div class="cook-card">
+      <div class="cook-hdr">
+        <div class="cook-htitle">${ck.title}</div>
+        <div class="cook-hsub">${ck.time}</div>
+      </div>`;
+    for (const s of ck.steps) {
+      html += `<div class="cook-step">
+        <div class="cook-t">${s.t}</div>
+        <div><div class="cook-n">${s.n}</div>${s.d?`<div class="cook-d">${s.d}</div>`:''}</div>
+      </div>`;
+    }
+    html += `</div>`;
+  }
+  root.innerHTML = html;
+}
+
+function renderTL() {
+  const root = document.getElementById('sc-tl');
+  const cards = [
+    {title:'День тренировки (Пн / Ср / Сб)', sub:'Push A · Pull B · Legs C', rows: TL_TRAIN},
+    {title:'День отдыха (Вт / Чт / Пт)',      sub:'Обычный режим',            rows: TL_REST},
+    {title:'Воскресенье',                       sub:'Закупка + Готовка 1',      rows: TL_SUN},
+  ];
+  let html = '';
+  for (const card of cards) {
+    html += `<div class="tl-card">
+      <div class="tl-hdr">
+        <div class="tl-htitle">${card.title}</div>
+        <div class="tl-hsub">${card.sub}</div>
+      </div>`;
+    for (const r of card.rows) {
+      html += `<div class="tl-row" style="border-left-color:${r.c}">
+        <div class="tl-t" style="color:${r.c}">${r.t}</div>
+        <div><div class="tl-n">${r.n}</div>${r.d?`<div class="tl-d">${r.d}</div>`:''}</div>
+      </div>`;
+    }
+    html += `</div>`;
+  }
+  root.innerHTML = html;
+}
+
+function renderShelf() {
+  const root = document.getElementById('sc-shelf');
+  let html = '<div class="shelf-card">';
+  for (const r of SHELF) {
+    html += `<div class="shelf-r">
+      <div>
+        <div class="shelf-n">${r.n}</div>
+        <div class="shelf-note">${r.note}</div>
+      </div>
+      <div class="shelf-d" style="color:${r.c}">${r.days}</div>
+    </div>`;
+  }
+  html += '</div>';
+  root.innerHTML = html;
+}
+
+function selSched(id, btn) {
+  document.querySelectorAll('.st').forEach(b => b.classList.remove('on'));
+  document.querySelectorAll('.sc').forEach(c => c.classList.remove('on'));
+  btn.classList.add('on');
+  document.getElementById('sc-' + id).classList.add('on');
+}
+
+// ─── NAV ─────────────────────────────────────────────────────────────────────
+
+function selTab(id) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('on'));
+  document.querySelectorAll('.nb').forEach(b => b.classList.remove('on'));
+  document.getElementById('tab-' + id).classList.add('on');
+  document.querySelector(`.nb[data-tab="${id}"]`).classList.add('on');
+}
+
+// ─── INIT ─────────────────────────────────────────────────────────────────────
+
+renderDays();
+renderMeals();
+renderShop();
+renderRules();
+renderWeek();
+renderCook();
+renderTL();
+renderShelf();
+</script>
+</body>
+</html>
